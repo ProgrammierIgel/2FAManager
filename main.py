@@ -248,12 +248,20 @@ class FAController:
 
 
   def set_new_password(self):
-    self.console.console_clear()
-    current_password = self.input_password("")
-    if current_password.startswith('/e'):
-      return
-    if not self.manager.check_password(current_password):
-      raise ValueError("WRONG PASSWORD")
+    pre_str = ""
+    tries = 0
+    while True:
+      self.console.console_clear()
+      current_password = self.input_password(f"{pre_str}")
+      if current_password.startswith('/e'):
+        return
+      if not self.manager.check_password(current_password):
+        pre_str = "Wrong Password. Try again."
+        tries+= 1
+        if tries >= 3:
+          raise ValueError("Wrong Password!")
+        continue
+      break
     pre_str=""
     while True:
       self.console.console_clear()

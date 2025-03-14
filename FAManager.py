@@ -25,7 +25,15 @@ class FAManager:
             raise ValueError("MUST BE POSSIBLE TO DIVIDE 32 BY LENGTH")
         json_dict = json.load(open(f"{self.path}/secrets.json"))
         json_dict["password"] = SHA256.new(new_password.encode()).hexdigest()
+
+
+        key_old = self.stretch_with_numbers(self.password, 32)
+        key_new = self.stretch_with_numbers(new_password, 32)
+        for name, secret in json_dict["secrets"].items():
+            decrypted_secret = Fernet(base64.urlsafe_b64encode(key_old.encode())).decrypt(bytes.fromhex(secret))
+            json_dict["secrets"][name] = Fernet(base64.urlsafe_b64encode(key_new.encode())).encrypt(decrypted_secret).hex()
         json.dump(json_dict, open(f"{self.path}/secrets.json", "w"), indent=2)
+        self.set_password(new_password)
 
     def set_password(self, password_to_check: str) -> str:
 
